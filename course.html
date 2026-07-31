@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="홍언주 교수 강의 안내" />
+    <title>강의 안내 | HONG EON JOO</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="course.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html">HEJ<span>·</span></a>
+      <nav><a href="index.html#about">소개</a><a class="active" href="courses.html">강의</a><a href="index.html#profile">프로필</a><a href="index.html#contact">문의하기</a></nav>
+      <a class="header-mail" href="mailto:digital@ktc.ac.kr">이메일 ↗</a>
+    </header>
+    <main class="course-page">
+      <a class="back-link" href="courses.html">← 강의 목록</a>
+      <p class="eyebrow" id="course-category"></p>
+      <h1 id="course-title"></h1>
+      <nav class="subnav" aria-label="강의 하위 메뉴">
+        <button class="active" data-tab="about">과목소개</button>
+        <button data-tab="syllabus">강의계획서</button>
+        <button data-tab="notice">공지사항</button>
+      </nav>
+      <section class="tab-panel active" id="about">
+        <h2>과목소개</h2><p id="course-introduction" class="intro-copy"></p>
+        <div class="info-grid"><div><small>학습 목표</small><p id="course-goal"></p></div><div><small>수업 방식</small><p>개념 이해와 실습을 병행하며, 실제 사례를 중심으로 학습합니다.</p></div></div>
+      </section>
+      <section class="tab-panel" id="syllabus">
+        <h2>강의계획서</h2><p class="panel-note">주차별 수업 내용은 학기 시작 전 또는 수업 안내 시 업데이트됩니다.</p>
+        <div class="syllabus-list" id="syllabus-list"></div>
+      </section>
+      <section class="tab-panel" id="notice">
+        <div class="notice-heading"><h2>공지사항</h2><p>수업 관련 공지와 자료 안내를 확인하세요.</p></div>
+        <div class="notice-list" id="notice-list"></div>
+      </section>
+    </main>
+    <footer>© 2026 HONG EON JOO · KOREA TOURISM COLLEGE</footer>
+    <script src="course.js"></script>
+  </body>
+</html>

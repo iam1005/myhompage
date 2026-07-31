@@ -1,4 +1,6 @@
 :root { --ink:#161616; --paper:#f8f8f6; --muted:#737373; --line:#d6d6d1; --deep:#242424; }
+footer a { color:#dcdcd9;text-decoration:none;border-bottom:1px solid #737373;padding-bottom:3px; } footer a:hover { color:#fff; }
+footer a { color:#dcdcd9;text-decoration:none;border-bottom:1px solid #737373;padding-bottom:3px; } footer a:hover { color:#fff; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
 body { margin:0; background:var(--paper); color:var(--ink); font-family:Pretendard,"Noto Sans KR",sans-serif; }

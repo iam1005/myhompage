@@ -5,12 +5,22 @@ const courses = {
   excel: { title: "비즈니스엑셀", category: "BUSINESS · EXCEL", intro: "업무에 바로 활용할 수 있는 엑셀 기능과 데이터 처리 방법을 학습합니다. 문서 작성, 함수 활용, 데이터 분석과 시각화를 통해 효율적인 업무 수행 역량을 기릅니다.", goal: "엑셀을 이용해 업무 데이터를 정리·분석하고 효과적으로 전달할 수 있습니다.", weeks: ["엑셀 업무 환경 이해", "데이터 입력과 정리", "함수와 조건부 계산", "데이터 분석 기능", "보고서 작성과 시각화"] }
 };
 const key = new URLSearchParams(location.search).get("course");
-const course = courses[key] || courses.ai;
+const courseKey = courses[key] ? key : "ai";
+const course = courses[courseKey];
 document.title = `${course.title} | HONG EON JOO`;
 document.querySelector("#course-title").textContent = course.title;
 document.querySelector("#course-category").textContent = course.category;
 document.querySelector("#course-introduction").textContent = course.intro;
 document.querySelector("#course-goal").textContent = course.goal;
 document.querySelector("#syllabus-list").innerHTML = course.weeks.map((week, index) => `<p><b>${String(index + 1).padStart(2, "0")}주차</b><span>${week}</span></p>`).join("");
-document.querySelector("#notice-list").innerHTML = '<article class="notice-empty"><p>등록된 공지사항이 없습니다. 수업 안내는 이곳에 업데이트됩니다.</p></article>';
+const noticeList = document.querySelector("#notice-list");
+async function loadNotices() {
+  noticeList.innerHTML = '<article class="notice-empty"><p>공지사항을 불러오는 중입니다.</p></article>';
+  const { data, error } = await window.supabaseClient.from("notices").select("title, body, published_at").eq("course", courseKey).eq("is_published", true).order("published_at", { ascending: false });
+  if (error) { noticeList.innerHTML = '<article class="notice-empty"><p>등록된 공지사항이 없습니다. 수업 안내는 이곳에 업데이트됩니다.</p></article>'; return; }
+  if (!data.length) { noticeList.innerHTML = '<article class="notice-empty"><p>등록된 공지사항이 없습니다. 수업 안내는 이곳에 업데이트됩니다.</p></article>'; return; }
+  noticeList.innerHTML = data.map((notice) => `<article><div><h3>${escapeHtml(notice.title)}</h3>${notice.body ? `<p>${escapeHtml(notice.body).replace(/\\n/g, "<br>")}</p>` : ""}</div><time>${new Date(notice.published_at).toLocaleDateString("ko-KR")}</time></article>`).join("");
+}
+function escapeHtml(value) { const div = document.createElement("div"); div.textContent = value; return div.innerHTML; }
+loadNotices();
 document.querySelectorAll(".subnav button").forEach((button) => button.addEventListener("click", () => { document.querySelectorAll(".subnav button,.tab-panel").forEach((element) => element.classList.remove("active")); button.classList.add("active"); document.querySelector(`#${button.dataset.tab}`).classList.add("active"); }));

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>공지사항 관리 | HONG EON JOO</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <header><a href="index.html">HEJ<span>·</span></a><p>NOTICE ADMINISTRATION</p></header>
+    <main>
+      <section class="login-card" id="login-view">
+        <p class="eyebrow">ADMIN LOGIN</p><h1>공지사항 관리</h1><p>관리자 계정으로 로그인해 공지글을 작성하고 관리할 수 있습니다.</p>
+        <form id="login-form"><label>이메일<input type="email" id="email" autocomplete="email" required /></label><label>비밀번호<input type="password" id="password" autocomplete="current-password" required /></label><button type="submit">로그인</button></form><p class="message" id="login-message"></p>
+      </section>
+      <section class="admin-view" id="admin-view" hidden>
+        <div class="admin-top"><div><p class="eyebrow">NOTICE ADMINISTRATION</p><h1>공지사항</h1></div><button class="text-button" id="logout">로그아웃</button></div>
+        <div class="admin-grid"><form class="notice-form" id="notice-form"><h2 id="form-heading">새 공지 작성</h2><input type="hidden" id="notice-id" /><label>과목<select id="course" required><option value="ai">AI수처리</option><option value="visualization">경영정보시각화</option><option value="accounting">스타트업세무전산회계</option><option value="excel">비즈니스엑셀</option></select></label><label>제목<input id="title" maxlength="200" required /></label><label>내용<textarea id="body" rows="7" placeholder="공지 내용을 입력하세요."></textarea></label><label class="publish"><input id="published" type="checkbox" checked /> 바로 공개하기</label><div class="form-actions"><button type="submit">저장하기</button><button type="button" class="secondary" id="cancel-edit" hidden>취소</button></div><p class="message" id="form-message"></p></form><section class="notice-admin-list"><div class="list-heading"><h2>등록한 공지</h2><select id="filter-course"><option value="all">전체 과목</option><option value="ai">AI수처리</option><option value="visualization">경영정보시각화</option><option value="accounting">스타트업세무전산회계</option><option value="excel">비즈니스엑셀</option></select></div><div id="admin-notice-list"></div></section></div>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="admin.js"></script>
+  </body>
+</html>

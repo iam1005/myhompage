@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="course.css" />
+    <link rel="stylesheet" href="dashboard.css" />
     <style>footer a{margin-left:18px;color:#dededb;text-decoration:none;border-bottom:1px solid #777;padding-bottom:3px}footer a:hover{color:#fff}</style>
   </head>
   <body>
@@ -28,6 +29,17 @@
       <section class="tab-panel active" id="about">
         <h2>과목소개</h2><p id="course-introduction" class="intro-copy"></p>
         <div class="info-grid"><div><small>학습 목표</small><p id="course-goal"></p></div><div><small>수업 방식</small><p>개념 이해와 실습을 병행하며, 실제 사례를 중심으로 학습합니다.</p></div></div>
+        <section class="sales-dashboard" id="sales-dashboard" hidden aria-labelledby="dashboard-title">
+          <div class="dashboard-heading"><div><p class="dashboard-kicker">PRACTICE DATA · 2024.01 — 2025.12</p><h3 id="dashboard-title">판매 분석 대시보드</h3></div><p>판매분석 실습 데이터 17,000건을 바탕으로 만든 경영정보 시각화 예시입니다.</p></div>
+          <div class="metric-grid" id="dashboard-metrics"></div>
+          <div class="dashboard-grid">
+            <article class="dashboard-card dashboard-card-wide"><div class="card-heading"><div><p>MONTHLY TREND</p><h4>월별 매출 추이</h4></div><span>단위: 억 원</span></div><div class="monthly-chart" id="monthly-chart"></div></article>
+            <article class="dashboard-card"><div class="card-heading"><div><p>CATEGORY</p><h4>카테고리별 매출</h4></div></div><div class="rank-chart" id="category-chart"></div></article>
+            <article class="dashboard-card"><div class="card-heading"><div><p>TIME OF DAY</p><h4>시간대별 매출</h4></div></div><div class="rank-chart" id="time-chart"></div></article>
+            <article class="dashboard-card dashboard-card-wide"><div class="card-heading"><div><p>CUSTOMER AGE</p><h4>연령대별 매출</h4></div><span>매출 비중</span></div><div class="age-chart" id="age-chart"></div></article>
+          </div>
+          <p class="dashboard-source">SOURCE · 판매분석.xlsx / 매출일자·제품·시간대·지역·성별·연령대·수량·매출액 기준</p>
+        </section>
       </section>
       <section class="tab-panel" id="syllabus">
         <h2>강의계획서</h2><p class="panel-note">주차별 수업 내용은 학기 시작 전 또는 수업 안내 시 업데이트됩니다.</p>
@@ -41,6 +53,7 @@
     <footer>© 2026 HONG EON JOO · KOREA TOURISM COLLEGE <a href="admin.html">관리자 로그인</a></footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="sales-dashboard-data.js"></script>
     <script src="course.js"></script>
   </body>
 </html>

@@ -12,6 +12,29 @@ document.querySelector("#course-title").textContent = course.title;
 document.querySelector("#course-category").textContent = course.category;
 document.querySelector("#course-introduction").textContent = course.intro;
 document.querySelector("#course-goal").textContent = course.goal;
+const dashboard = document.querySelector("#sales-dashboard");
+if (courseKey === "visualization" && window.salesDashboardData) {
+  const data = window.salesDashboardData;
+  const won = (value) => `${(value / 100000000).toFixed(1)}억 원`;
+  const number = new Intl.NumberFormat("ko-KR");
+  const highest = (items) => Math.max(...items.map((item) => item.sales));
+  dashboard.hidden = false;
+  document.querySelector("#dashboard-metrics").innerHTML = [
+    ["총매출", won(data.summary.sales), "24개월 누적"], ["판매 수량", `${number.format(data.summary.quantity)}개`, "전 상품 합계"],
+    ["판매 건수", `${number.format(data.summary.orders)}건`, "분석 대상 거래"], ["분석 기간", `${data.summary.days}일`, "2024.01 — 2025.12"]
+  ].map(([label, value, note]) => `<div class="metric"><small>${label}</small><strong>${value}</strong><span>${note}</span></div>`).join("");
+  const monthly = [...data.monthly].sort((a, b) => a.label.localeCompare(b.label));
+  const maxMonth = highest(monthly);
+  document.querySelector("#monthly-chart").innerHTML = monthly.map((item) => `<div class="month-bar"><div class="bar-track"><i style="height:${Math.max(7, item.sales / maxMonth * 100)}%" title="${item.label} ${won(item.sales)}"></i></div><span>${item.label.slice(5)}월</span></div>`).join("");
+  const ranked = (items, target) => {
+    const max = highest(items);
+    document.querySelector(target).innerHTML = items.map((item) => `<div class="rank-row"><div><span>${item.label}</span><b>${won(item.sales)}</b></div><i><em style="width:${item.sales / max * 100}%"></em></i></div>`).join("");
+  };
+  ranked(data.category, "#category-chart");
+  ranked([...data.time].sort((a, b) => a.label.localeCompare(b.label)), "#time-chart");
+  const maxAge = highest(data.age);
+  document.querySelector("#age-chart").innerHTML = data.age.map((item) => `<div class="age-row"><span>${item.label}</span><i><em style="width:${item.sales / maxAge * 100}%"></em></i><b>${won(item.sales)}</b></div>`).join("");
+}
 document.querySelector("#syllabus-list").innerHTML = course.weeks.map((week, index) => `<p><b>${String(index + 1).padStart(2, "0")}주차</b><span>${week}</span></p>`).join("");
 const noticeList = document.querySelector("#notice-list");
 async function loadNotices() {

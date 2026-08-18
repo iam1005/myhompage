@@ -36,6 +36,9 @@ if (courseKey === "visualization" && window.salesDashboardData) {
   document.querySelector("#age-chart").innerHTML = data.age.map((item) => `<div class="age-row"><span>${item.label}</span><i><em style="width:${item.sales / maxAge * 100}%"></em></i><b>${won(item.sales)}</b></div>`).join("");
 }
 document.querySelector("#syllabus-list").innerHTML = course.weeks.map((week, index) => `<p><b>${String(index + 1).padStart(2, "0")}주차</b><span>${week}</span></p>`).join("");
+if (courseKey === "ai") {
+  document.querySelector("#course-dashboard").innerHTML = `<section class="dashboard-embed"><div class="dashboard-heading"><div><small>AI DATA DASHBOARD</small><h3>AI수처리 대시보드</h3></div><a href="https://script.google.com/macros/s/AKfycbxLmeCTtryxdcgNBEY2gV4KEuAlB2-2_swZxO1tuGMjbtq2Z97WMIjuPcAOBmcpihn_aw/exec" target="_blank" rel="noopener noreferrer">새 창으로 보기 ↗</a></div><iframe title="AI수처리 대시보드" src="https://script.google.com/macros/s/AKfycbxLmeCTtryxdcgNBEY2gV4KEuAlB2-2_swZxO1tuGMjbtq2Z97WMIjuPcAOBmcpihn_aw/exec" loading="lazy"></iframe></section>`;
+}
 const noticeList = document.querySelector("#notice-list");
 async function loadNotices() {
   noticeList.innerHTML = '<article class="notice-empty"><p>공지사항을 불러오는 중입니다.</p></article>';

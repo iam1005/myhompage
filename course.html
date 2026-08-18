@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="course.css" />
     <link rel="stylesheet" href="dashboard.css" />
     <style>footer a{margin-left:18px;color:#dededb;text-decoration:none;border-bottom:1px solid #777;padding-bottom:3px}footer a:hover{color:#fff}</style>
+    <style>.dashboard-embed{margin-top:50px;border:1px solid #d6d6d1;background:#fff}.dashboard-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 22px;border-bottom:1px solid #d6d6d1}.dashboard-heading small{color:#737373;font:500 10px "DM Mono",monospace;letter-spacing:.08em}.dashboard-heading h3{margin:6px 0 0;font-size:18px;letter-spacing:-.05em}.dashboard-heading a{color:#161616;font-size:12px;text-decoration:none;border-bottom:1px solid #161616;padding-bottom:3px;white-space:nowrap}.dashboard-embed iframe{display:block;width:100%;height:680px;border:0;background:#fff}@media(max-width:700px){.dashboard-embed{margin-top:35px}.dashboard-heading{align-items:flex-start;padding:17px}.dashboard-heading a{font-size:11px}.dashboard-embed iframe{height:560px}}</style>
   </head>
   <body>
     <header class="site-header">
@@ -28,6 +29,7 @@
       </nav>
       <section class="tab-panel active" id="about">
         <h2>과목소개</h2><p id="course-introduction" class="intro-copy"></p>
+        <div id="course-dashboard"></div>
         <div class="info-grid"><div><small>학습 목표</small><p id="course-goal"></p></div><div><small>수업 방식</small><p>개념 이해와 실습을 병행하며, 실제 사례를 중심으로 학습합니다.</p></div></div>
         <section class="sales-dashboard" id="sales-dashboard" hidden aria-labelledby="dashboard-title">
           <div class="dashboard-heading"><div><p class="dashboard-kicker">PRACTICE DATA · 2024.01 — 2025.12</p><h3 id="dashboard-title">판매 분석 대시보드</h3></div><p>판매분석 실습 데이터 17,000건을 바탕으로 만든 경영정보 시각화 예시입니다.</p></div>

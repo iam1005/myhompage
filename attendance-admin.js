@@ -3,7 +3,7 @@ const courseNames = { ai: "AI수처리", visualization: "경영정보시각화",
 const coursePeriods = { ai: 2, visualization: 3, excel: 3, accounting: 3 };
 let matrixData = null;
 async function token() { const { data: { session } } = await client.auth.getSession(); return session?.access_token; }
-async function api(action, body = {}) { const response = await fetch(`/api/attendance?action=${action}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await token()}` }, body: JSON.stringify({ action, origin: location.origin, ...body }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "오류가 발생했습니다."); return data; }
+async function api(action, body = {}) { const response = await fetch(`/api/attendance?action=${action}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await token()}` }, body: JSON.stringify({ action, origin: location.origin, ...body }) }); const text = await response.text(); let data; try { data = text ? JSON.parse(text) : {}; } catch { throw new Error("출석 서버가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해 주세요."); } if (!response.ok) throw new Error(data.error || "오류가 발생했습니다."); return data; }
 function populatePeriods() { const course = document.querySelector("#start-course").value; document.querySelector("#start-period").innerHTML = Array.from({ length: coursePeriods[course] }, (_, i) => `<option value="${i + 1}">${i + 1}교시</option>`).join(""); }
 document.querySelector("#start-week").innerHTML = Array.from({ length: 15 }, (_, i) => `<option value="${i + 1}">${i + 1}주차</option>`).join("");
 document.querySelector("#start-course").addEventListener("change", populatePeriods); populatePeriods();

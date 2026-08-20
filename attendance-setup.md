@@ -14,7 +14,7 @@ Vercel 프로젝트의 **Settings → Environment Variables**에 아래 값을 P
 | `SUPABASE_PUBLISHABLE_KEY` | Supabase Publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase의 `service_role` secret key |
 | `ADMIN_EMAIL` | `digital@ktc.ac.kr` |
-| `ALLOWED_PC_RANGES` | `[["211.253.246.211","211.253.246.250"],["211.253.246.61","211.253.246.110"]]` |
+| `ALLOWED_PC_RANGES` | 추가 PC망 공인 IP 범위가 있을 때만 입력. 기본 목록에는 `211.253.246.61~110`, `211.253.246.211~250`, 연구실 `211.252.61.251`이 포함됩니다. |
 | `ALLOWED_WIRELESS_RANGES` | 무선망 공인 IP를 받은 뒤 추가. 예: `[["203.0.113.10","203.0.113.20"]]` |
 
 `SUPABASE_SERVICE_ROLE_KEY`는 비밀 키입니다. 웹페이지 코드나 채팅에 붙여 넣지 않습니다.

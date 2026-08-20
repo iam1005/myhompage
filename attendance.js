@@ -1,5 +1,5 @@
 const token = new URLSearchParams(location.search).get("token") || "";
-const courseNames = { ai: "AI수처리", visualization: "경영정보시각화", excel: "비즈니스엑셀", accounting: "스타트업세무전산회계" };
+const courseNames = { ai: "AI수처리", visualization: "경영정보시각화", excel: "비즈니스엑셀실무", accounting: "스타트업세무전산회계" };
 let expiresAt = 0, requestedCode = "";
 const message = document.querySelector("#message"), codeInput = document.querySelector("#access-code"), result = document.querySelector("#result");
 async function request(action, payload) { const response = await fetch(`/api/attendance?action=${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, ...payload }) }); const text = await response.text(); let data; try { data = text ? JSON.parse(text) : {}; } catch { throw new Error("출석 서버가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해 주세요."); } if (!response.ok) throw new Error(data.error || "오류가 발생했습니다."); return data; }

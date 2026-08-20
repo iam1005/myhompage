@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="course.css" />
     <link rel="stylesheet" href="dashboard.css" />
     <style>footer a{margin-left:18px;color:#dededb;text-decoration:none;border-bottom:1px solid #777;padding-bottom:3px}footer a:hover{color:#fff}</style>
-    <style>.dashboard-embed{margin-top:50px;border:1px solid #d6d6d1;background:#fff}.dashboard-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 22px;border-bottom:1px solid #d6d6d1}.dashboard-heading small{color:#737373;font:500 10px "DM Mono",monospace;letter-spacing:.08em}.dashboard-heading h3{margin:6px 0 0;font-size:18px;letter-spacing:-.05em}.dashboard-heading a{color:#161616;font-size:12px;text-decoration:none;border-bottom:1px solid #161616;padding-bottom:3px;white-space:nowrap}.dashboard-embed iframe{display:block;width:100%;height:680px;border:0;background:#fff}@media(max-width:700px){.dashboard-embed{margin-top:35px}.dashboard-heading{align-items:flex-start;padding:17px}.dashboard-heading a{font-size:11px}.dashboard-embed iframe{height:560px}}</style>
+    <style>.dashboard-embed{margin-top:50px;border:1px solid #d6d6d1;background:#fff}.dashboard-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 22px;border-bottom:1px solid #d6d6d1}.dashboard-heading small{color:#737373;font:500 10px "DM Mono",monospace;letter-spacing:.08em}.dashboard-heading h3{margin:6px 0 0;font-size:18px;letter-spacing:-.05em}.dashboard-heading a{color:#161616;font-size:12px;text-decoration:none;border-bottom:1px solid #161616;padding-bottom:3px;white-space:nowrap}.dashboard-embed iframe{display:block;width:100%;height:680px;border:0;background:#fff}.attendance-start{max-width:640px;padding:30px;background:#efefec;border-top:1px solid #161616}.attendance-start p{line-height:1.8}.attendance-start a{display:inline-block;margin-top:14px;padding:13px 18px;background:#161616;color:#fff;font-size:14px;font-weight:600;text-decoration:none}@media(max-width:700px){.dashboard-embed{margin-top:35px}.dashboard-heading{align-items:flex-start;padding:17px}.dashboard-heading a{font-size:11px}.dashboard-embed iframe{height:560px}}</style>
   </head>
   <body>
     <header class="site-header">
@@ -26,6 +26,7 @@
         <button class="active" data-tab="about">과목소개</button>
         <button data-tab="syllabus">강의계획서</button>
         <button data-tab="notice">공지사항</button>
+        <button data-tab="attendance">출석체크</button>
       </nav>
       <section class="tab-panel active" id="about">
         <h2>과목소개</h2><p id="course-introduction" class="intro-copy"></p>
@@ -50,6 +51,10 @@
       <section class="tab-panel" id="notice">
         <div class="notice-heading"><h2>공지사항</h2><p>수업 관련 공지와 자료 안내를 확인하세요.</p></div>
         <div class="notice-list" id="notice-list"></div>
+      </section>
+      <section class="tab-panel" id="attendance">
+        <h2>출석체크</h2>
+        <div class="attendance-start"><p>관리자가 출석을 시작한 뒤 강의실 화면에 표시되는 6자리 코드를 입력해 주세요. 출석은 지정된 교내망에서 30초 동안만 가능합니다.</p><a href="attendance.html">6자리 출석 코드 입력</a></div>
       </section>
     </main>
     <footer>© 2026 HONG EON JOO · KOREA TOURISM COLLEGE <a href="admin.html">관리자 로그인</a></footer>

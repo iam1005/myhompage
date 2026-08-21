@@ -11,3 +11,4 @@ document.querySelector("#checkin-form").addEventListener("submit", async (event)
 if (token) openSession("");
 document.querySelector(".attendance-notice li:nth-child(2)").innerHTML = "관리자가 연 출석 코드와 QR은 <b>60초 동안만</b> 유효합니다.";
 function actualPeriod(course,period){const schedule={ai:[5,6],visualization:[6,7,8],excel:[6,7,8],accounting:[1,2,3]};return schedule[course]?.[period-1]||period}
+document.querySelector(".attendance-notice li").innerHTML="출석은 지정된 <b>강의실 유선 또는 무선망</b>에서만 가능합니다.";

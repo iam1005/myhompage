@@ -39,6 +39,9 @@ document.querySelector("#syllabus-list").innerHTML = course.weeks.map((week, ind
 if (courseKey === "ai") {
   document.querySelector("#course-dashboard").innerHTML = `<section class="dashboard-embed"><div class="dashboard-heading"><div><small>AI DATA DASHBOARD</small><h3>AI수처리 대시보드</h3></div><a href="https://script.google.com/macros/s/AKfycbxLmeCTtryxdcgNBEY2gV4KEuAlB2-2_swZxO1tuGMjbtq2Z97WMIjuPcAOBmcpihn_aw/exec" target="_blank" rel="noopener noreferrer">새 창으로 보기 ↗</a></div><iframe title="AI수처리 대시보드" src="https://script.google.com/macros/s/AKfycbxLmeCTtryxdcgNBEY2gV4KEuAlB2-2_swZxO1tuGMjbtq2Z97WMIjuPcAOBmcpihn_aw/exec" loading="lazy"></iframe></section>`;
 }
+if (courseKey === "excel") {
+  document.querySelector("#course-tool").innerHTML = `<section class="excel-tool"><div class="excel-tool-heading"><div><small>EXCEL · AI DATA INSIGHT REPORTER</small><h3>AI 데이터 인사이트 리포터</h3><p>엑셀 또는 CSV 데이터를 업로드하여 핵심 지표와 시각화 결과를 직접 만들어 보는 실습 도구입니다.</p></div><a href="ai-data-insight-reporter.html" target="_blank" rel="noopener noreferrer">새 창으로 보기 ↗</a></div><iframe title="AI 데이터 인사이트 리포터" src="ai-data-insight-reporter.html" loading="lazy"></iframe></section>`;
+}
 const noticeList = document.querySelector("#notice-list");
 async function loadNotices() {
   noticeList.innerHTML = '<article class="notice-empty"><p>공지사항을 불러오는 중입니다.</p></article>';

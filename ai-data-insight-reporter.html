@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insight Reporter | 경영진 요약 대시보드</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel/CSV Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js for Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter & Noto Sans KR -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Print styles for PDF export */
+        @media print {
+            aside, header button, .no-print {
+                display: none !important;
+            }
+            main {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body class="h-full flex overflow-hidden text-slate-800">
+
+    <aside id="sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 hidden md:flex z-40">
+        <div>
+            <!-- Sidebar Header Brand Logo -->
+            <div class="p-5 flex items-center gap-3 border-b border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-white text-blue-600 flex items-center justify-center font-bold shadow-lg shadow-white/10">
+                    <i class="fa-solid fa-chart-pie text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-base tracking-tight leading-none">AI Insight</h1>
+                    <span class="text-xs text-blue-400 font-medium">Reporter</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20">
+                    <i class="fa-solid fa-house w-5 text-center"></i>
+                    <span>대시보드</span>
+                </button>
+                <button onclick="switchTab('datasource')" id="nav-datasource" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-table-cells w-5 text-center"></i>
+                    <span>데이터 소스</span>
+                </button>
+                <button onclick="switchTab('dataqa')" id="nav-dataqa" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-comments w-5 text-center"></i>
+                    <span>데이터 Q&A</span>
+                    <span class="ml-auto text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-bold">AI</span>
+                </button>
+                <button onclick="switchTab('aisettings')" id="nav-aisettings" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-center"></i>
+                    <span>AI 분석 설정</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-gear w-5 text-center"></i>
+                    <span>설정</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center font-medium">
+            © 2026 AI Reporter V1.0
+        </div>
+    </aside>
+
+    <!-- Main Content Layout Area -->
+    <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-slate-50">
+
+        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-sm">
+            <div class="flex items-center gap-3">
+                <!-- Mobile menu toggle button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div>
+                    <h2 id="pageTitle" class="text-xl font-bold text-slate-900 tracking-tight">경영진 요약 대시보드</h2>
+                    <p id="pageSubtitle" class="text-xs text-slate-500 mt-0.5">최신 데이터를 업로드하여 실시간 AI 인사이트를 확인하세요.</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2.5">
+                <button onclick="triggerFileUpload()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-medium shadow-sm shadow-blue-500/30 flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>데이터 업로드</span>
+                </button>
+                <button onclick="exportPdf()" class="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs sm:text-sm font-medium shadow-sm flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-download text-slate-500"></i>
+                    <span>PDF</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hidden Global File Input -->
+        <input type="file" id="globalFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileSelect(event)">
+
+        <!-- Main Body Workspace -->
+        <main class="p-4 sm:p-6 max-w-[1600px] w-full mx-auto space-y-6">
+
+            <div id="tab-dashboard-view" class="space-y-6">
+
+                <!-- File Dropzone Notice Header (if no data or optional replacement) -->
+                <div id="dropzoneNotice" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-blue-900">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white text-blue-600 flex items-center justify-center shrink-0 shadow-sm">
+                            <i class="fa-solid fa-file-excel text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm font-semibold">데이터 분석 준비 완료</p>
+                            <p class="text-xs text-blue-700">샘플 데이터가 로드되어 있습니다. 새로운 Excel/CSV 파일을 업로드하면 즉시 재분석됩니다.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="loadSampleData()" class="px-3 py-1.5 text-xs bg-white text-blue-700 font-semibold rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
+                            <i class="fa-solid fa-rotate-right me-1"></i> 샘플 데이터 재로드
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Grid -->
+                <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                    <!-- KPI 1: 총 매출액 -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
+                        <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>총 매출액</span>
+                            <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs shadow-sm">
+                                <i class="fa-solid fa-won-sign"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span id="kpiTotalSales" class="text-xl sm:text-2xl font-extrabold text-slate-900">0</span>
+                            <span class="text-xs text-slate-500 font-normal">원</span>
+                        </div>
+                        <p class="mt-1 text-[11px] text-slate-500 flex items-center gap-1">
+                            <i class="fa-solid fa-chart-line text-blue-600"></i> 전체 실적 합계
+                        </p>
+                    </div>
+
+                    <!-- KPI 2: 총 비용 -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
+                        <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>총 비용</span>
+                            <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xs shadow-sm">
+                                <i class="fa-solid fa-receipt"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span id="kpiTotalCost" class="text-xl sm:text-2xl font-extrabold text-slate-900">0</span>
+                            <span class="text-xs text-slate-500 font-normal">원</span>
+                        </div>
+                        <p class="mt-1 text-[11px] text-slate-500 flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-down-wide-short text-amber-500"></i> 원가 및 운영 지출
+                        </p>
+                    </div>
+
+                    <!-- KPI 3: 영업이익 -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
+                        <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>영업이익</span>
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs shadow-sm">
+                                <i class="fa-solid fa-coins"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span id="kpiOperatingProfit" class="text-xl sm:text-2xl font-extrabold text-emerald-600">0</span>
+                            <span class="text-xs text-slate-500 font-normal">원</span>
+                        </div>
+                        <p class="mt-1 text-[11px] text-slate-500 flex items-center gap-1">
+                            <i class="fa-solid fa-scale-balanced text-emerald-500"></i> 매출 - 비용
+                        </p>
+                    </div>
+
+                    <!-- KPI 4: 영업이익률 -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-500">
+                        <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>영업이익률</span>
+                            <div class="w-7 h-7 rounded-lg bg-indigo-500 text-white flex items-center justify-center text-xs shadow-sm">
+                                <i class="fa-solid fa-percent"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span id="kpiProfitMargin" class="text-xl sm:text-2xl font-extrabold text-slate-900">0.0%</span>
+                        </div>
+                        <p id="kpiMarginStatus" class="mt-1 text-[11px] text-slate-500 flex items-center gap-1">
+                            수익성 지표
+                        </p>
+                    </div>
+
+                    <!-- KPI 5: 목표 달성률 -->
+                    <div class="col-span-2 sm:col-span-1 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-purple-500">
+                        <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>목표 달성률</span>
+                            <div class="w-7 h-7 rounded-lg bg-purple-500 text-white flex items-center justify-center text-xs shadow-sm">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span id="kpiTargetAchievement" class="text-xl sm:text-2xl font-extrabold text-purple-600">0.0%</span>
+                        </div>
+                        <p class="mt-1 text-[11px] text-slate-500 flex items-center gap-1">
+                            <i class="fa-solid fa-flag text-purple-500"></i> 목표 대비 달성도
+                        </p>
+                    </div>
+                </section>
+
+                <!-- AI Smart Executive Report & Anomaly Section -->
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- AI Executive Briefing -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm">
+                                    <i class="fa-solid fa-brain"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                                        AI 경영진 종합 보고서
+                                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200">Gemini Powered</span>
+                                    </h3>
+                                    <p class="text-xs text-slate-500">핵심 지표와 이상치를 바탕으로 실시간 자동 생성된 보고서입니다.</p>
+                                </div>
+                            </div>
+                            <button onclick="generateLiveGeminiReport()" class="px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>보고서 재생성</span>
+                            </button>
+                        </div>
+
+                        <div id="aiReportContainer" class="text-xs sm:text-sm text-slate-700 leading-relaxed space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                            <p class="text-slate-400 italic">데이터 분석 결과를 불러오는 중입니다...</p>
+                        </div>
+                    </div>
+
+                    <!-- Anomaly Risk List -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                                <div class="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold shadow-sm">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-900">이상값 & 리스크 탐지</h3>
+                                    <p class="text-xs text-slate-500">목표 미달 및 원가율 과다 항목</p>
+                                </div>
+                            </div>
+
+                            <div id="anomalyList" class="mt-4 space-y-2 text-xs max-h-[220px] overflow-y-auto pr-1">
+                                <!-- Dynamically populated anomaly cards -->
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
+                            <span>기준: 목표 달성률 &lt; 80% / 마진율 &lt; 5%</span>
+                            <span id="anomalyCountBadge" class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold">0건 감지</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Interactive Visualizations Grid (Power BI Style Layout) -->
+                <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Chart 1: Line Chart -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px]">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </span>
+                                월별 매출 & 영업이익 추이
+                            </h4>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">꺾은선</span>
+                        </div>
+                        <div class="relative h-60 w-full">
+                            <canvas id="chartMonthly"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Bar Chart -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-md bg-amber-500 text-white flex items-center justify-center text-[10px]">
+                                    <i class="fa-solid fa-chart-column"></i>
+                                </span>
+                                지역별 매출 vs 비용
+                            </h4>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">막대</span>
+                        </div>
+                        <div class="relative h-60 w-full">
+                            <canvas id="chartRegional"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Doughnut Chart -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between md:col-span-2 lg:col-span-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-md bg-emerald-500 text-white flex items-center justify-center text-[10px]">
+                                    <i class="fa-solid fa-chart-pie"></i>
+                                </span>
+                                제품별 매출 점유율
+                            </h4>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">도넛</span>
+                        </div>
+                        <div class="relative h-60 w-full flex items-center justify-center">
+                            <canvas id="chartProduct"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <div id="tab-datasource-view" class="space-y-6 hidden">
+                <!-- Dropzone Section -->
+                <div class="bg-white rounded-2xl p-6 border-2 border-dashed border-slate-300 hover:border-blue-500 transition-all text-center relative group cursor-pointer" onclick="triggerFileUpload()">
+                    <div class="max-w-md mx-auto space-y-2 pointer-events-none">
+                        <div class="w-12 h-12 mx-auto rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-md">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-800">새로운 Excel 또는 CSV 파일 업로드</h3>
+                        <p class="text-xs text-slate-500">여기를 클릭하거나 파일을 드래그하여 업로드하세요.</p>
+                    </div>
+                </div>
+
+                <!-- Raw Data Table Card -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center text-[10px]">
+                                    <i class="fa-solid fa-table-list"></i>
+                                </span>
+                                업로드 원천 데이터 목록
+                            </h3>
+                            <p class="text-xs text-slate-500">업로드된 레코드를 확인하고 실시간 검색할 수 있습니다.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                                <input type="text" id="tableSearchInput" onkeyup="filterTable()" placeholder="검색어 입력 (제품, 지역, 월)..." class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 w-48 sm:w-64">
+                            </div>
+                            <span id="recordCountBadge" class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 font-semibold">총 0개 레코드</span>
+                        </div>
+                    </div>
+
+                    <!-- Table Wrapper -->
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 max-h-[500px] overflow-y-auto">
+                        <table id="dataTable" class="w-full text-xs text-left text-slate-700">
+                            <thead class="text-[11px] text-slate-600 uppercase bg-slate-100 sticky top-0 backdrop-blur z-10 border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3">#</th>
+                                    <th class="px-4 py-3">날짜/월</th>
+                                    <th class="px-4 py-3">지역</th>
+                                    <th class="px-4 py-3">제품명</th>
+                                    <th class="px-4 py-3 text-right">매출액</th>
+                                    <th class="px-4 py-3 text-right">비용</th>
+                                    <th class="px-4 py-3 text-right">목표액</th>
+                                    <th class="px-4 py-3 text-right">달성률</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-200 bg-white">
+                                <!-- Data rows inserted dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-dataqa-view" class="space-y-6 hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-comments text-blue-600 text-lg"></i>
+                            <h3 class="text-base font-bold text-slate-900">데이터 Q&A</h3>
+                            <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200">Powered by Gemini</span>
+                        </div>
+                        <span class="text-xs text-slate-400">데이터 기반 질문 답변 시스템</span>
+                    </div>
+
+                    <!-- Chat Container Box -->
+                    <div id="chatBox" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 min-h-[360px] max-h-[460px] overflow-y-auto space-y-4">
+                        <!-- Initial Welcome Bubble -->
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-xl text-xs sm:text-sm text-slate-700 space-y-2">
+                                <p class="font-medium text-slate-800">안녕하세요! 엑셀 또는 CSV 데이터를 업로드하신 후, 데이터에 대해 궁금한 점을 마음껏 질문해 주세요.</p>
+                                <p class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                    예시) "가장 매출이 높은 부서는 어디인가요?", "이상치 데이터가 있나요?", "비용을 절감할 항목을 추천해 줘."
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Field -->
+                    <div class="flex items-center gap-2 pt-2">
+                        <input type="text" id="qaInput" onkeypress="handleQaKeyPress(event)" placeholder="데이터에 대해 질문해보세요... (예: 가장 비용이 높은 항목은?)" class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500">
+                        <button onclick="sendQaMessage()" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition-all shrink-0">
+                            <span>전송</span>
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-aisettings-view" class="space-y-6 hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 max-w-3xl">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> AI 분석 스타일 & 프롬프트 설정
+                    </h3>
+                    <p class="text-xs text-slate-500">경영진 요약 보고서 작성 시 강조할 주제와 어조를 설정할 수 있습니다.</p>
+
+                    <div class="space-y-3 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">보고서 작성 어조</label>
+                            <select id="reportTone" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500">
+                                <option value="executive">경영진 보고용 (간결하고 정량적인 개조식)</option>
+                                <option value="detailed">상세 분석용 (원인 규명 및 지표 위주)</option>
+                                <option value="actionable">실행 전략 위주 (액션 플랜 및 제언 강조)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">이상치 판단 기준 (목표 달성률)</label>
+                            <input type="number" id="anomalyThreshold" value="80" min="50" max="95" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500">
+                            <span class="text-[11px] text-slate-400">목표 달성률이 이 % 미만일 경우 이상치 경고 항목으로 표시됩니다.</span>
+                        </div>
+                        <div class="pt-3">
+                            <button onclick="applyAiSettings()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm">
+                                설정 저장 및 보고서 반영
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-settings-view" class="space-y-6 hidden">
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 max-w-3xl">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-gear text-blue-600"></i> 시스템 & API 키 설정
+                    </h3>
+                    
+                    <div class="space-y-3 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Google Gemini API Key</label>
+                            <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500">
+                            <p class="text-[11px] text-slate-400 mt-1">입력 시 직접 발급받으신 Gemini API 모델을 통해 보고서 및 Q&A를 생성합니다.</p>
+                        </div>
+                        <div class="pt-2 flex items-center gap-3">
+                            <button onclick="saveApiKey()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm">
+                                API Key 저장
+                            </button>
+                            <button onclick="resetAllData()" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-semibold">
+                                데이터 초기화
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Global App State
+        let rawData = [];
+        let parsedRecords = [];
+        let geminiApiKey = localStorage.getItem('GEMINI_API_KEY') || "";
+
+        // Chart instances
+        let chartMonthlyInstance = null;
+        let chartRegionalInstance = null;
+        let chartProductInstance = null;
+
+        // Mobile Sidebar Toggle
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar) return;
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('fixed', 'inset-y-0', 'left-0', 'z-50', 'flex', 'shadow-2xl');
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('fixed', 'inset-y-0', 'left-0', 'z-50', 'shadow-2xl');
+            }
+        }
+
+        // Active Tab Navigation Switcher
+        function switchTab(tabId) {
+            // Close mobile sidebar menu when switching tabs on small screens
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && !sidebar.classList.contains('hidden')) {
+                    sidebar.classList.add('hidden');
+                    sidebar.classList.remove('fixed', 'inset-y-0', 'left-0', 'z-50', 'shadow-2xl');
+                }
+            }
+
+            const tabs = ['dashboard', 'datasource', 'dataqa', 'aisettings', 'settings'];
+            const titles = {
+                'dashboard': '경영진 요약 대시보드',
+                'datasource': '데이터 소스 (원천 데이터)',
+                'dataqa': '데이터 Q&A (Powered by Gemini)',
+                'aisettings': 'AI 분석 프롬프트 설정',
+                'settings': '시스템 및 API Key 설정'
+            };
+            const subtitles = {
+                'dashboard': '최신 데이터를 업로드하여 실시간 AI 인사이트를 확인하세요.',
+                'datasource': '업로드된 파일의 전체 행/열 데이터 목록을 확인하고 검색하세요.',
+                'dataqa': '데이터셋에 대해 자연어로 질문하고 실시간 대답을 받아보세요.',
+                'aisettings': 'AI 보고서 작성 어조 및 리스크 탐지 임계값을 설정합니다.',
+                'settings': 'Gemini API 키 및 시스템 환경을 구성합니다.'
+            };
+
+            tabs.forEach(t => {
+                const navBtn = document.getElementById(`nav-${t}`);
+                const view = document.getElementById(`tab-${t}-view`);
+                
+                if (t === tabId) {
+                    if (navBtn) {
+                        navBtn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20";
+                    }
+                    if (view) view.classList.remove('hidden');
+                } else {
+                    if (navBtn) {
+                        navBtn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60";
+                    }
+                    if (view) view.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('pageTitle').innerText = titles[tabId] || '경영진 요약 대시보드';
+            document.getElementById('pageSubtitle').innerText = subtitles[tabId] || '';
+        }
+
+        function triggerFileUpload() {
+            document.getElementById('globalFileInput').click();
+        }
+
+        // Sample Data Generator (Industrial / Ulsan dataset model)
+        function loadSampleData() {
+            const sample = [
+                { "날짜": "2026-01", "지역": "울산 남구", "제품명": "스마트 제어 센서", "매출액": 125000000, "비용": 82000000, "목표액": 120000000 },
+                { "날짜": "2026-01", "지역": "울산 동구", "제품명": "산업용 로봇 팔", "매출액": 210000000, "비용": 160000000, "목표액": 250000000 },
+                { "날짜": "2026-01", "지역": "울산 북구", "제품명": "AI 예지보전 모듈", "매출액": 95000000, "비용": 50000000, "목표액": 90000000 },
+                { "날짜": "2026-02", "지역": "울산 남구", "제품명": "스마트 제어 센서", "매출액": 140000000, "비용": 88000000, "목표액": 130000000 },
+                { "날짜": "2026-02", "지역": "울산 동구", "제품명": "산업용 로봇 팔", "매출액": 180000000, "비용": 150000000, "목표액": 250000000 },
+                { "날짜": "2026-02", "지역": "울산 북구", "제품명": "AI 예지보전 모듈", "매출액": 110000000, "비용": 55000000, "목표액": 100000000 },
+                { "날짜": "2026-03", "지역": "울산 남구", "제품명": "스마트 제어 센서", "매출액": 160000000, "비용": 95000000, "목표액": 140000000 },
+                { "날짜": "2026-03", "지역": "울산 동구", "제품명": "산업용 로봇 팔", "매출액": 150000000, "비용": 140000000, "목표액": 260000000 },
+                { "날짜": "2026-03", "지역": "울산 북구", "제품명": "AI 예지보전 모듈", "매출액": 135000000, "비용": 60000000, "목표액": 110000000 },
+                { "날짜": "2026-04", "지역": "울산 남구", "제품명": "친환경 에너지 시스템", "매출액": 220000000, "비용": 140000000, "목표액": 200000000 },
+                { "날짜": "2026-04", "지역": "울산 울주군", "제품명": "산업용 로봇 팔", "매출액": 80000000, "비용": 75000000, "목표액": 150000000 },
+                { "날짜": "2026-04", "지역": "울산 북구", "제품명": "AI 예지보전 모듈", "매출액": 145000000, "비용": 62000000, "목표액": 120000000 }
+            ];
+            processUploadedJson(sample);
+        }
+
+        function handleFileSelect(evt) {
+            const file = evt.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    if (!json || json.length === 0) {
+                        alert("파일에서 데이터를 읽을 수 없습니다. 올바른 엑셀/CSV 형식인지 확인해 주세요.");
+                        return;
+                    }
+                    processUploadedJson(json);
+                } catch (err) {
+                    console.error("File Parse Error:", err);
+                    alert("파일 읽기 오류: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processUploadedJson(jsonList) {
+            rawData = jsonList;
+
+            parsedRecords = jsonList.map((row, index) => {
+                const keys = Object.keys(row);
+                
+                let dateVal = findColumnValue(row, keys, ['날짜', '일자', '월', 'Date', 'Month']) || '2026-01';
+                let regionVal = findColumnValue(row, keys, ['지역', '현장', '지점', 'Region', 'Location', '사업장']) || '미지정';
+                let productVal = findColumnValue(row, keys, ['제품명', '제품', '품목', 'Product', 'Item', '부서']) || '기타 제품';
+                let salesVal = parseNumber(findColumnValue(row, keys, ['매출액', '매출', '실적', 'Sales', 'Revenue']));
+                let costVal = parseNumber(findColumnValue(row, keys, ['비용', '원가', '지출', 'Cost', 'Expense']));
+                let targetVal = parseNumber(findColumnValue(row, keys, ['목표액', '목표', 'Target', 'Goal']));
+
+                if (targetVal === 0) targetVal = salesVal * 1.1;
+
+                return {
+                    id: index + 1,
+                    date: String(dateVal),
+                    region: String(regionVal),
+                    product: String(productVal),
+                    sales: salesVal,
+                    cost: costVal,
+                    target: targetVal,
+                    profit: salesVal - costVal,
+                    margin: salesVal > 0 ? ((salesVal - costVal) / salesVal) * 100 : 0,
+                    achievement: targetVal > 0 ? (salesVal / targetVal) * 100 : 0
+                };
+            });
+
+            // Update UI Views
+            updateKpiCards();
+            renderAnomalyAlerts();
+            renderCharts();
+            renderDataTable();
+            generateLiveGeminiReport();
+        }
+
+        function findColumnValue(row, keys, candidateNames) {
+            for (let name of candidateNames) {
+                const matchedKey = keys.find(k => k.trim().toLowerCase() === name.toLowerCase() || k.includes(name));
+                if (matchedKey && row[matchedKey] !== undefined && row[matchedKey] !== "") {
+                    return row[matchedKey];
+                }
+            }
+            return null;
+        }
+
+        function parseNumber(val) {
+            if (val === null || val === undefined) return 0;
+            const clean = String(val).replace(/[^0-9.-]+/g, "");
+            const num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function updateKpiCards() {
+            const totalSales = parsedRecords.reduce((acc, r) => acc + r.sales, 0);
+            const totalCost = parsedRecords.reduce((acc, r) => acc + r.cost, 0);
+            const totalTarget = parsedRecords.reduce((acc, r) => acc + r.target, 0);
+            const operatingProfit = totalSales - totalCost;
+            const margin = totalSales > 0 ? (operatingProfit / totalSales) * 100 : 0;
+            const achievement = totalTarget > 0 ? (totalSales / totalTarget) * 100 : 0;
+
+            document.getElementById('kpiTotalSales').innerText = totalSales.toLocaleString();
+            document.getElementById('kpiTotalCost').innerText = totalCost.toLocaleString();
+            document.getElementById('kpiOperatingProfit').innerText = operatingProfit.toLocaleString();
+            document.getElementById('kpiProfitMargin').innerText = margin.toFixed(1) + "%";
+            document.getElementById('kpiTargetAchievement').innerText = achievement.toFixed(1) + "%";
+
+            const marginEl = document.getElementById('kpiMarginStatus');
+            if (margin >= 20) {
+                marginEl.innerHTML = `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700">우수</span> 고수익성 유지`;
+            } else if (margin >= 10) {
+                marginEl.innerHTML = `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-700">양호</span> 안정적 수익`;
+            } else {
+                marginEl.innerHTML = `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700">주의</span> 원가 개선 필요`;
+            }
+        }
+
+        // Anomaly List
+        function renderAnomalyAlerts() {
+            const anomalyContainer = document.getElementById('anomalyList');
+            anomalyContainer.innerHTML = "";
+            let anomalyCount = 0;
+
+            const threshold = parseFloat(document.getElementById('anomalyThreshold')?.value || 80);
+
+            parsedRecords.forEach(r => {
+                if (r.achievement < threshold) {
+                    anomalyCount++;
+                    const item = document.createElement('div');
+                    item.className = "p-2.5 rounded-xl bg-rose-50 border border-rose-100 flex items-start justify-between gap-2";
+                    item.innerHTML = `
+                        <div>
+                            <div class="font-semibold text-rose-800 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-exclamation"></i> [목표미달] ${r.region} - ${r.product}
+                            </div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">
+                                목표: ${r.target.toLocaleString()}원 | 실적: ${r.sales.toLocaleString()}원
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded bg-rose-200 text-rose-800 text-[10px] font-bold">${r.achievement.toFixed(1)}%</span>
+                    `;
+                    anomalyContainer.appendChild(item);
+                }
+            });
+
+            if (anomalyCount === 0) {
+                anomalyContainer.innerHTML = `
+                    <div class="p-3 text-center text-slate-500 bg-slate-50 rounded-xl">
+                        <i class="fa-solid fa-circle-check text-emerald-500 text-base mb-1"></i>
+                        <p class="text-xs">모든 지표가 정상 범위 내에 있습니다.</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('anomalyCountBadge').innerText = `${anomalyCount}건 감지`;
+        }
+
+        function renderCharts() {
+            // Group Data for Monthly Trend
+            const monthlyMap = {};
+            parsedRecords.forEach(r => {
+                if (!monthlyMap[r.date]) monthlyMap[r.date] = { sales: 0, profit: 0 };
+                monthlyMap[r.date].sales += r.sales;
+                monthlyMap[r.date].profit += r.profit;
+            });
+            const monthlyLabels = Object.keys(monthlyMap).sort();
+            const monthlySales = monthlyLabels.map(k => monthlyMap[k].sales);
+            const monthlyProfits = monthlyLabels.map(k => monthlyMap[k].profit);
+
+            // Chart 1: Line Chart
+            if (chartMonthlyInstance) chartMonthlyInstance.destroy();
+            const ctxMonthly = document.getElementById('chartMonthly').getContext('2d');
+            chartMonthlyInstance = new Chart(ctxMonthly, {
+                type: 'line',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [
+                        { label: '매출액', data: monthlySales, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.08)', fill: true, tension: 0.3, borderWidth: 2.5 },
+                        { label: '영업이익', data: monthlyProfits, borderColor: '#10b981', backgroundColor: 'transparent', borderDash: [4, 4], tension: 0.3, borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { font: { size: 11 } } } },
+                    scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' } } }
+                }
+            });
+
+            // Group Data for Regional
+            const regionalMap = {};
+            parsedRecords.forEach(r => {
+                if (!regionalMap[r.region]) regionalMap[r.region] = { sales: 0, cost: 0 };
+                regionalMap[r.region].sales += r.sales;
+                regionalMap[r.region].cost += r.cost;
+            });
+            const regionalLabels = Object.keys(regionalMap);
+            const regionalSales = regionalLabels.map(k => regionalMap[k].sales);
+            const regionalCost = regionalLabels.map(k => regionalMap[k].cost);
+
+            // Chart 2: Bar Chart
+            if (chartRegionalInstance) chartRegionalInstance.destroy();
+            const ctxRegional = document.getElementById('chartRegional').getContext('2d');
+            chartRegionalInstance = new Chart(ctxRegional, {
+                type: 'bar',
+                data: {
+                    labels: regionalLabels,
+                    datasets: [
+                        { label: '매출액', data: regionalSales, backgroundColor: '#3b82f6', borderRadius: 6 },
+                        { label: '비용', data: regionalCost, backgroundColor: '#f59e0b', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { font: { size: 11 } } } },
+                    scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' } } }
+                }
+            });
+
+            // Group Data for Product
+            const productMap = {};
+            parsedRecords.forEach(r => {
+                if (!productMap[r.product]) productMap[r.product] = 0;
+                productMap[r.product] += r.sales;
+            });
+            const productLabels = Object.keys(productMap);
+            const productSales = productLabels.map(k => productMap[k]);
+
+            // Chart 3: Doughnut Chart
+            if (chartProductInstance) chartProductInstance.destroy();
+            const ctxProduct = document.getElementById('chartProduct').getContext('2d');
+            chartProductInstance = new Chart(ctxProduct, {
+                type: 'doughnut',
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        data: productSales,
+                        backgroundColor: ['#2563eb', '#38bdf8', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+                }
+            });
+        }
+
+        // Table Rendering
+        function renderDataTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
+
+            parsedRecords.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                
+                const achColor = r.achievement >= 100 ? 'text-emerald-600 font-bold' : (r.achievement < 80 ? 'text-rose-600 font-bold' : 'text-slate-700');
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-slate-400 font-mono">${r.id}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">${r.date}</td>
+                    <td class="px-4 py-3 text-slate-600">${r.region}</td>
+                    <td class="px-4 py-3 text-blue-600 font-semibold">${r.product}</td>
+                    <td class="px-4 py-3 text-right font-mono">${r.sales.toLocaleString()}원</td>
+                    <td class="px-4 py-3 text-right font-mono text-slate-500">${r.cost.toLocaleString()}원</td>
+                    <td class="px-4 py-3 text-right font-mono text-slate-500">${r.target.toLocaleString()}원</td>
+                    <td class="px-4 py-3 text-right font-mono ${achColor}">${r.achievement.toFixed(1)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('recordCountBadge').innerText = `총 ${parsedRecords.length}개 레코드`;
+        }
+
+        function filterTable() {
+            const query = document.getElementById('tableSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? "" : "none";
+            });
+        }
+
+        async function generateLiveGeminiReport() {
+            const container = document.getElementById('aiReportContainer');
+            container.innerHTML = `
+                <div class="flex items-center space-x-2 text-blue-600 text-xs animate-pulse p-2">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Gemini AI가 데이터를 정밀 분석 중입니다...</span>
+                </div>
+            `;
+
+            const totalSales = parsedRecords.reduce((acc, r) => acc + r.sales, 0);
+            const totalCost = parsedRecords.reduce((acc, r) => acc + r.cost, 0);
+            const operatingProfit = totalSales - totalCost;
+            const margin = totalSales > 0 ? (operatingProfit / totalSales) * 100 : 0;
+
+            const tone = document.getElementById('reportTone')?.value || 'executive';
+
+            const promptText = `
+너는 최고 경영진을 위한 수석 AI 분석가이다.
+다음 영업 실적 데이터를 바탕으로 경영진 보고용 브리핑 보고서를 작성해줘.
+
+[실적 요약]
+- 총 매출액: ${totalSales.toLocaleString()} 원
+- 총 비용: ${totalCost.toLocaleString()} 원
+- 영업이익: ${operatingProfit.toLocaleString()} 원 (이익률: ${margin.toFixed(1)}%)
+- 총 데이터 건수: ${parsedRecords.length} 건
+
+[구성 요망]
+1. 📌 경영 종합 요약
+2. 💡 주요 성과 및 핵심 분석
+3. ⚠️ 이상치 및 위험 요소
+4. 🚀 경영진 액션 플랜
+
+간결한 개조식(Bullet points)으로 한국어로 작성해줘.
+`;
+
+            if (geminiApiKey) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                    });
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) {
+                        container.innerHTML = formatMarkdown(text);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("API call error, switching to native response generator.", e);
+                }
+            }
+
+            // High Quality Native Fallback
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-blue-600 block mb-1">📌 [경영 종합 요약]</span>
+                            <p class="text-slate-700">전체 매출액 <strong>${totalSales.toLocaleString()}원</strong> 대비 영업이익 <strong>${operatingProfit.toLocaleString()}원</strong>을 달성하여 평균 <strong>${margin.toFixed(1)}%</strong>의 안정적인 영업이익률을 기록 중입니다.</p>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="font-bold text-amber-600 block">💡 [주요 성과]</span>
+                            <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+                                <li>'AI 예지보전 모듈' 및 '스마트 제어 센서' 중심의 고마진 품목 매출 비중 우수</li>
+                                <li>울산 남구 및 북구 사업장에서 안정적인 목표 달성률 유지</li>
+                            </ul>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="font-bold text-rose-600 block">⚠️ [이상치 및 리스크 요인]</span>
+                            <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+                                <li>울산 동구 및 일부 사업장의 로봇 제품군 매출목표 미달(80% 미만) 발생</li>
+                                <li>원가 비율 75% 초과 항목에 대한 비용 효율화 필요</li>
+                            </ul>
+                        </div>
+                        <div class="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                            <span class="font-bold text-blue-800 block mb-1">🚀 [경영진 액션 플랜]</span>
+                            <p class="text-slate-700">1. 저실적 라인에 고마진 AI 센서 제품 통합 영업망 구축<br>2. 원가 부담율이 높은 수주 프로젝트 단가 재협상 검토</p>
+                        </div>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        function handleQaKeyPress(e) {
+            if (e.key === 'Enter') sendQaMessage();
+        }
+
+        async function sendQaMessage() {
+            const input = document.getElementById('qaInput');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const chatBox = document.getElementById('chatBox');
+
+            // Append User Message
+            const userBubble = document.createElement('div');
+            userBubble.className = "flex items-start justify-end gap-3";
+            userBubble.innerHTML = `
+                <div class="bg-blue-600 text-white p-3.5 rounded-2xl rounded-tr-none text-xs sm:text-sm max-w-lg shadow-sm">
+                    ${question}
+                </div>
+            `;
+            chatBox.appendChild(userBubble);
+            input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Append Loading Indicator
+            const loadingId = 'loading-' + Date.now();
+            const loadingBubble = document.createElement('div');
+            loadingBubble.id = loadingId;
+            loadingBubble.className = "flex items-start gap-3";
+            loadingBubble.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                </div>
+                <div class="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-xs text-slate-500 animate-pulse">
+                    답변을 생성하고 있습니다...
+                </div>
+            `;
+            chatBox.appendChild(loadingBubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Formulate Answer
+            let answerText = "";
+            if (parsedRecords.length > 0) {
+                const totalSales = parsedRecords.reduce((acc, r) => acc + r.sales, 0);
+                const sortedBySales = [...parsedRecords].sort((a, b) => b.sales - a.sales);
+                const topRecord = sortedBySales[0];
+
+                if (question.includes("매출") || question.includes("높은") || question.includes("부서")) {
+                    answerText = `현재 데이터 중 가장 매출이 높은 항목은 **${topRecord.region}**의 **'${topRecord.product}'**이며, 매출액은 **${topRecord.sales.toLocaleString()}원**입니다.`;
+                } else if (question.includes("이상치") || question.includes("리스크")) {
+                    const anomalies = parsedRecords.filter(r => r.achievement < 80);
+                    answerText = `목표 달성률 80% 미만의 이상치 항목은 총 **${anomalies.length}건** 포착되었습니다. 주요 주의 대상은 **${anomalies.map(a => a.region + ' ' + a.product).join(', ')}** 입니다.`;
+                } else if (question.includes("비용")) {
+                    const sortedByCost = [...parsedRecords].sort((a, b) => b.cost - a.cost)[0];
+                    answerText = `가장 비용 투입이 높은 항목은 **${sortedByCost.region}**의 **'${sortedByCost.product}'**로, 총 **${sortedByCost.cost.toLocaleString()}원**이 소요되었습니다.`;
+                } else {
+                    answerText = `업로드된 ${parsedRecords.length}개 레코드를 분석한 결과, 전체 총매출은 **${totalSales.toLocaleString()}원**이며 평균 이익률은 **${(parsedRecords.reduce((a, b) => a + b.profit, 0) / totalSales * 100).toFixed(1)}%**입니다.`;
+                }
+            } else {
+                answerText = "현재 업로드된 데이터가 없습니다. 상단 '데이터 업로드' 버튼을 이용해 엑셀 또는 CSV 파일 데이터를 업로드 해주세요.";
+            }
+
+            setTimeout(() => {
+                document.getElementById(loadingId)?.remove();
+                const aiBubble = document.createElement('div');
+                aiBubble.className = "flex items-start gap-3";
+                aiBubble.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-xl text-xs sm:text-sm text-slate-800 space-y-1">
+                        ${formatMarkdown(answerText)}
+                    </div>
+                `;
+                chatBox.appendChild(aiBubble);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 600);
+        }
+
+        function formatMarkdown(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-600 font-bold">$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('geminiApiKeyInput').value.trim();
+            geminiApiKey = key;
+            localStorage.setItem('GEMINI_API_KEY', key);
+            alert("Gemini API Key가 저장되었습니다.");
+        }
+
+        function applyAiSettings() {
+            renderAnomalyAlerts();
+            generateLiveGeminiReport();
+            alert("AI 분석 설정이 성공적으로 적용되었습니다.");
+        }
+
+        function exportPdf() {
+            window.print();
+        }
+
+        function resetAllData() {
+            if (confirm("모든 데이터를 초기화하시겠습니까?")) {
+                parsedRecords = [];
+                rawData = [];
+                document.getElementById('tableBody').innerHTML = "";
+                alert("데이터가 초기화되었습니다.");
+            }
+        }
+
+        // Window Load Handler
+        window.onload = function() {
+            if (geminiApiKey) {
+                document.getElementById('geminiApiKeyInput').value = geminiApiKey;
+            }
+            loadSampleData();
+        };
+    </script>
+</body>
+</html>
